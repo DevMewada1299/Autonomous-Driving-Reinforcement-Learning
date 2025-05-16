@@ -40,7 +40,7 @@ min_speeds = []
 max_speeds = []
 lane_changes = []
 
-for episode in range(10):
+for episode in range(5):
     obs = vec_env.reset()
     done = False
     total_reward = 0
@@ -60,9 +60,8 @@ for episode in range(10):
         total_reward += reward[0]
         steps += 1
 
-        if env.vehicle.crashed:
+        if not crashed and info[0].get("crashed", False):
             crashed = True
-            collision_count += 1
 
         current_lane = env.vehicle.lane_index[2]
         if current_lane != last_lane:
@@ -75,10 +74,13 @@ for episode in range(10):
     min_speeds.append(np.min(speeds))
     max_speeds.append(np.max(speeds))
     lane_changes.append(lane_change_count)
+    if crashed:
+        collision_count += 1
+
 
 print(f"Average Reward: {np.mean(episode_rewards):.2f}")
 print(f"Average Episode Length: {np.mean(episode_lengths):.2f}")
-print(f"Collision Rate: {collision_count:.2f}%")
+print(f"Collision Rate: {100 * collision_count / len(episode_rewards):.2f}%")
 print(f"Average Speed: {np.mean(episode_speeds):.2f} m/s")
 print(f"Min Speed (avg across episodes): {np.mean(min_speeds):.2f} m/s")
 print(f"Max Speed (avg across episodes): {np.mean(max_speeds):.2f} m/s")

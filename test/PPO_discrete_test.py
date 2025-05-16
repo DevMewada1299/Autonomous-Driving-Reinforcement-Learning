@@ -59,7 +59,7 @@ for episode in range(10):
         total_reward += reward[0]
         steps += 1
 
-        if env.vehicle.crashed:
+        if not crashed and info[0].get("crashed", False):
             crashed = True
 
         current_lane = env.vehicle.lane_index[2]
@@ -74,6 +74,8 @@ for episode in range(10):
     min_speeds.append(np.min(speeds))
     max_speeds.append(np.max(speeds))
     lane_changes.append(lane_change_count)
+    if crashed:
+        collision_count += 1
 
 print(f"Average Reward: {np.mean(episode_rewards):.2f}")
 print(f"Average Episode Length: {np.mean(episode_lengths):.2f}")
