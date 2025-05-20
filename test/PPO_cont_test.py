@@ -2,8 +2,6 @@ from stable_baselines3 import PPO
 import gymnasium as gym
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 import numpy as np
-
-from Custom_Env.highway_env_custom import highwayEnvCustom
 from gymnasium.envs.registration import register
 from Custom_Env.highway_env_custom import highwayEnvCustom
 register(
@@ -42,15 +40,22 @@ lane_changes = []
 
 for episode in range(10):
     obs = vec_env.reset()
-    done = False
+    done = np.array([False])
     total_reward = 0
+
+    from gymnasium.envs.registration import register
+
+    register(
+        id='highway-custom-PPO-cont',
+        entry_point='Custom_Env.Highway_env_continuos:highwayEnvContinuos',
+    )
     steps = 0
     speeds = []
     crashed = False
     last_lane = env.vehicle.lane_index[2]
     lane_change_count = 0
 
-    while not done:
+    while not done[0]:
         action, _ = model.predict(obs)
         obs, reward, done, info = vec_env.step(action)
         # vec_env.render()  # Optional: Disable for faster testing
@@ -68,8 +73,6 @@ for episode in range(10):
             lane_change_count += 1
             last_lane = current_lane
 
-
-
     episode_rewards.append(total_reward)
     episode_lengths.append(steps)
     collision_count += int(crashed)
@@ -77,8 +80,6 @@ for episode in range(10):
     min_speeds.append(np.min(speeds))
     max_speeds.append(np.max(speeds))
     lane_changes.append(lane_change_count)
-    if crashed:
-        collision_count += 1
 
 print(f"Average Reward: {np.mean(episode_rewards):.2f}")
 print(f"Average Episode Length: {np.mean(episode_lengths):.2f}")
